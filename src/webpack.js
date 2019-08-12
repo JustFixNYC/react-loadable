@@ -36,7 +36,7 @@ class ReactLoadablePlugin {
   }
 
   apply(compiler) {
-    compiler.plugin('emit', (compilation, callback) => {
+    const emit = (compilation, callback) => {
       const manifest = buildManifest(compiler, compilation);
       var json = JSON.stringify(manifest, null, 2);
       const outputDirectory = path.dirname(this.filename);
@@ -49,7 +49,13 @@ class ReactLoadablePlugin {
       }
       fs.writeFileSync(this.filename, json);
       callback();
-    });
+    };
+    if (compiler.hooks) {
+      const plugin = { name: 'ReactLoadablePlugin' };
+      compiler.hooks.emit.tapAsync(plugin, emit);
+    } else {
+      compiler.plugin('emit', emit);
+    }
   }
 }
 
